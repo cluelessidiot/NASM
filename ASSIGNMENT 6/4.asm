@@ -1,25 +1,22 @@
 section .data
-msg1: db 'Enetr the numbers',0ah
+msg1: db 'Enter the number',0ah
 lmsg1: equ $-msg1
-msg2: db 'the sum is...',0ah
+msg2: db 'the factorial is...',0ah
 lmsg2: equ $-lmsg1
-msp: db ' '
-lmsp:equ $-msp
+
 
 section .bss
-num:resb 2
-prt_i:resb 2
-print_digit:resb 2
+num:resb 4
+prt_i:resb 4
+print_digit:resb 4
 
 
-out_read:resb 2
-out_read_prt:resb 2
-out_read_prt2:resb 2
-in_digit:resb 2
-i:resb 2
-j:resb 2
-ct:resb 2
-sum_fib:resb 2
+out_read:resb 4
+in_digit:resb 4
+i:resb 4
+j:resb 4
+ct:resb 4
+sum_fact:resb 4
 section .text
 
 global _start:
@@ -31,72 +28,41 @@ _start:
         mov ecx,msg1
         mov edx,lmsg1
         int 80h
-        mov word[sum_fib],0
+         mov dword[sum_fact],1
+        call read
+        call factorial
+        
+         mov ebx,dword[sum_fact]
+         mov dword[num],ebx 
+          call print
     
-         call read
-       mov ax,word[out_read]
-       mov word[out_read_prt2],ax
-mov word[out_read_prt],1  
-        call fib_prt
-  
+     
+
+
+
+
+
+
+
+
 
     mov eax, 1
     mov ebx,0
     int 80h
 
-fib_prt:
- pusha
-
-      mov ax,word[out_read_prt]
-      mov word[out_read],ax
-      call fib_sums
-
-
-       mov ax,word[out_read_prt2]
-       cmp word[sum_fib],ax
-       ja end_fibprt   
-        mov ax,word[sum_fib]  
-     mov word[num],ax 
-      call print
-       call space
-      mov word[sum_fib],0
-
-       
-      inc word[out_read_prt]
-      call fib_prt
-
-
-
-
-end_fibprt:
-popa
-ret
-
-
-fib_sums:
+factorial:
 pusha
-   cmp word[out_read],1
-   jne not1
-   mov ax,word[sum_fib]
-   add ax,1
-   mov word[sum_fib],ax
-   jmp end
-not1:
-   cmp word[out_read],0
-    jne not0
-       mov ax,word[sum_fib]
-   add ax,0
-   mov word[sum_fib],ax
-   jmp end
-not0:
-       dec word[out_read]
-       mov ax,word[out_read]
-       push ax 
-    call fib_sums
-       pop ax
-       mov word[out_read] ,ax  
-       dec word[out_read]
-     call fib_sums
+     cmp dword[out_read],1
+     je end 
+      
+     mov ebx,dword[sum_fact]
+
+     mov eax,dword[out_read]
+     mul ebx
+      
+      mov dword[sum_fact],eax
+      dec dword[out_read]
+      call factorial
  end:
  popa
  ret
@@ -104,9 +70,23 @@ not0:
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 read:
 pusha 
-  mov word[out_read],0
+  mov dword[out_read],0
  loop_read:
         
 	mov eax,3
@@ -115,21 +95,21 @@ pusha
         mov edx,1
         int 80h
 
-	cmp word[in_digit],10
+	cmp dword[in_digit],10
         je end_read_loop
 
 
-        mov ax,word[out_read]
-        mov bx,10
-        mov dx,0
-	mul bx
-        mov word[out_read],ax
+        mov eax,dword[out_read]
+        mov ebx,10
+        mov edx,0
+	mul ebx
+        mov dword[out_read],eax
        
-        mov bx,word[in_digit]
-        sub bx,030h
-        mov ax,word[out_read]
-        add ax,bx
-        mov word[out_read],ax
+        mov ebx,dword[in_digit]
+        sub ebx,030h
+        mov eax,dword[out_read]
+        add eax,ebx
+        mov dword[out_read],eax
         jmp loop_read
 
   end_read_loop:
@@ -139,23 +119,23 @@ ret
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 print:
 pusha
-	mov word[prt_i],0
+	mov dword[prt_i],0
  loop_print:
-	mov ax,word[num]
-        mov bx,10
-	mov dx,0
-	div bx
-	push dx
-        mov word[num],ax
+	mov eax,dword[num]
+        mov ebx,10
+	mov edx,0
+	div ebx
+	push edx
+        mov dword[num],eax
 
 
-        inc word[prt_i]
-	cmp ax,0
+        inc dword[prt_i]
+	cmp eax,0
         jne loop_print
  print_num:      
-        pop dx
-        add dx,030h
-        mov word[print_digit],dx
+        pop edx
+        add edx,030h
+        mov dword[print_digit],edx
         
  
         mov eax,4
@@ -164,19 +144,9 @@ pusha
 	mov edx,1
 	int 80h
         
-        dec word[prt_i]
-        cmp word[prt_i],0
+        dec dword[prt_i]
+        cmp dword[prt_i],0
         jne print_num
         
 popa 
-ret
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-space:
-pusha
-     mov eax,4
-	mov ebx,1
-      mov ecx,msp
-      mov edx,lmsp
-       int 80h
-popa
 ret
